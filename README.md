@@ -7,6 +7,12 @@ produces data to kafka borker.
 
 ## Kafka running
 
+## Download Kafka bineries
+
+Click
+[here](https://www.apache.org/dyn/closer.cgi?path=/kafka/3.2.1/kafka_2.13-3.2.1.tgz)
+to download kafka `.tgz` file
+
 This is only demo to run a kafka broker server after downloaded it bineries.
 
 ```sh
