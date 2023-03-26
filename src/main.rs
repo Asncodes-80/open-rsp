@@ -1,37 +1,43 @@
 /// Rust SNMP Producer
 ///
 /// WIP: Up and running produce and write new data from here.
-use kafka::producer::{Producer, Record};
+use std::{thread, time};
+
+use clap::Parser;
+
+mod producer;
+use producer::Event;
 
 fn main() {
+    let args = Args::parse();
     println!("Start new rsp instance...");
 
     let hosts: Vec<String> = vec!["localhost:9092".to_string()];
     let mut producer = Event::init(hosts);
 
-    producer.send_data(
-        "my-topic",
-        String::from("This is only test from a super simple Rust app"),
-    );
+    for i in 1..=args.times {
+        producer.send_data("my-topic", String::from(format!("This is message {}", i)));
+        thread::sleep(time::Duration::from_secs(args.duration));
+    }
 }
 
-struct Event {
-    producer: Producer,
-}
+/// open-rsp - Produce Snmp data to Kafka broker.
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about=None)]
+struct Args {
+    /// duration: Speed of produce new value to Kafka broker
+    #[arg(short, long, default_value_t = 1)]
+    duration: u64,
 
-impl Event {
-    /// # Initiate new Kafka connection
-    pub fn init(hosts: Vec<String>) -> Self {
-        let producer = Producer::from_hosts(hosts).create().unwrap();
+    /// times: count of produce new value
+    #[arg(short, long, default_value_t = 5)]
+    times: i32,
 
-        Self { producer }
-    }
+    /// ip: Destination Snmp machine Ip address
+    #[arg(short, long, default_value_t=String::from("127.0.0.1"))]
+    ip: String,
 
-    /// # Send raw data
-    ///
-    /// Gets string data, and converts it to bytes and sends it by a proper Kafka:Producer.
-    pub fn send_data(&mut self, topic: &str, data: String) {
-        let record = Record::from_value(topic, data.as_bytes());
-        self.producer.send(&record).unwrap();
-    }
+    /// port: Destination Snmp machine port number
+    #[arg(short, long, default_value_t = 1234)]
+    port: u32,
 }

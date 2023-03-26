@@ -8,4 +8,5 @@ edition = "2021"
 # https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.1.13", features = ["derive"] }
 kafka = "0.9"
