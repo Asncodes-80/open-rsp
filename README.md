@@ -1,19 +1,19 @@
 # Rust SNMP Producer - Client
 
 A Rust client app, connects to SNMP server, gets all SNMP data, parsing them,
-produces data to kafka borker.
+produces data to kafka broker.
 
 ## RSP App Description
 
 ## Kafka running
 
-## Download Kafka bineries
+## Download Kafka binaries
 
 Click
 [here](https://www.apache.org/dyn/closer.cgi?path=/kafka/3.2.1/kafka_2.13-3.2.1.tgz)
 to download kafka `.tgz` file
 
-This is only demo to run a kafka broker server after downloaded it bineries.
+This is only demo to run a kafka broker server after downloaded it:
 
 ```sh
 # Running zookeeper server
@@ -28,7 +28,7 @@ bin/kafka-server-start.sh config/server.properties
 After create a topic, it will open new consumer about your topic: 
 
 ```sh
-bin/kafka-topics.sh --create --topic my-topic --botstrap-server localhost:9092 # Created topic my-topic
+bin/kafka-topics.sh --create --topic my-topic --bootstrap-server localhost:9092 # Created topic my-topic
 ```
 
 ## Read::Consumer
@@ -44,5 +44,5 @@ bin/kafka-console-consumer.sh --topic my-topic --from-beginning --bootstrap-serv
 Prepares a console environment to write new message to send Kafka consumer:
 
 ```sh
-bin/kafka-console-producer.sh --topic my-topic --botstrap-server localhost:9092
+bin/kafka-console-producer.sh --topic my-topic --bootstrap-server localhost:9092
 ```
