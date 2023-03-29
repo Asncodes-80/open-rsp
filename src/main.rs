@@ -1,43 +1,67 @@
 /// Rust SNMP Producer
 ///
-/// WIP: Up and running produce and write new data from here.
-use std::{thread, time};
-
+///      (None) `V1` TODO: Complete with real logical state
+///        | ip: String
+///        | port: String
+///        | topic: String
+///        v
+///   (UPD::connect())
+///       |\_____________
+///       |              | create::session()
+///       |              |
+///       |          [Produce]
+///    panic()           |\___________
+///                      |            |
+///                   panic()         | {CreateMessage()}
+///                                   | {Base-on Topic()}
+///                                   v
+///                       New-data-produced-to-Kafka
+///
+/// Logical State               __state
+/// ------------                ---------
+/// Idle                        _RSP_IDLE
+/// Udp-Session-created         _RSP_UDP_SES_CREATED
+/// Udp-Request-started         _RSP_UDP_STARTED
+/// Gather-Snmp-info            _RSP_DATA_COLLECT
+/// Parse-data                  _RSP_DATA_PARSE
+/// Produce-2Kafka              _RSP_PRODUCER
+///
 use clap::Parser;
+use std::io;
+use tokio::net::UdpSocket;
 
 mod producer;
 use producer::Event;
 
-fn main() {
+#[tokio::main]
+async fn main() -> io::Result<()> {
     let args = Args::parse();
     println!("Start new rsp instance...");
 
-    let hosts: Vec<String> = vec!["localhost:9092".to_string()];
-    let mut producer = Event::init(hosts);
+    let _ = UdpSocket::bind(format!("{}:{}", args.ip, args.port)).await?;
 
-    for i in 1..=args.times {
-        producer.send_data("my-topic", String::from(format!("This is message {}", i)));
-        thread::sleep(time::Duration::from_secs(args.duration));
-    }
+    let mut producer: Event = Event::init(vec!["localhost:9092".to_string()]);
+    producer.send_data(
+        &args.topic,
+        String::from(format!("This is message {}", "Test")),
+    );
+
+    Ok(())
 }
 
 /// open-rsp - Produce Snmp data to Kafka broker.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
 struct Args {
-    /// duration: Speed of produce new value to Kafka broker
-    #[arg(short, long, default_value_t = 1)]
-    duration: u64,
-
-    /// times: count of produce new value
-    #[arg(short, long, default_value_t = 5)]
-    times: i32,
-
     /// ip: Destination Snmp machine Ip address
-    #[arg(short, long, default_value_t=String::from("127.0.0.1"))]
+    #[arg(short, long)]
     ip: String,
 
     /// port: Destination Snmp machine port number
-    #[arg(short, long, default_value_t = 1234)]
+    #[arg(short, long)]
     port: u32,
+
+    /// topic: Topic name
+    #[arg(short, long)]
+    topic: String,
 }
