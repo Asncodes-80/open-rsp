@@ -25,7 +25,6 @@
 /// Gather-Snmp-info            _RSP_DATA_COLLECT
 /// Parse-data                  _RSP_DATA_PARSE
 /// Produce-2Kafka              _RSP_PRODUCER
-///
 use clap::Parser;
 use std::io;
 use tokio::net::UdpSocket;
@@ -41,10 +40,7 @@ async fn main() -> io::Result<()> {
     let _ = UdpSocket::bind(format!("{}:{}", args.ip, args.port)).await?;
 
     let mut producer: Event = Event::init(vec!["localhost:9092".to_string()]);
-    producer.send_data(
-        &args.topic,
-        String::from(format!("This is message {}", "Test")),
-    );
+    producer.send_data(&args.topic, String::from(format!("This is message {}", "Test")));
 
     Ok(())
 }
