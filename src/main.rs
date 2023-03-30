@@ -49,19 +49,31 @@ async fn main() -> io::Result<()> {
     Ok(())
 }
 
-/// open-rsp - Produce Snmp data to Kafka broker.
+/// open-rsp - SNMP data gather and produce them to Kafka broker.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
 struct Args {
-    /// ip: Destination Snmp machine Ip address
+    /// IP: Destination Snmp machine Ip address
     #[arg(short, long)]
     ip: String,
 
-    /// port: Destination Snmp machine port number
+    /// Port: Destination Snmp machine port number
     #[arg(short, long)]
     port: u32,
 
-    /// topic: Topic name
+    /// Username: SNMP gateway username
+    #[arg(short, long)]
+    username: String,
+
+    /// Password: SNMP gateway password
+    #[arg(short, long)]
+    passwd: String,
+
+    /// Protocol: Connection protocol
+    #[arg(short, long, default_value_t = String::from("MD5"))]
+    connection_protocol: String,
+
+    /// Topic: Topic name to produce value to Kafka
     #[arg(short, long)]
     topic: String,
 }
