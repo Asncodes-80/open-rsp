@@ -42,3 +42,14 @@ specification.
 
 A trap message is generally sent by an agent to a manager. Traps are async
 notifications in that they are unsolicited by the manage receiving them.
+
+## snmpget cmd
+
+```sh
+snmpwalk -v3 -l authnoPriv -u publicMD5 -a MD5 -A publicMD5 5.201.128.78:5051 1.3.6.1.6.3.15.1.13.44.0
+```
+
+```txt
+out:
+SNMP-USER-BASED-SM-MIB::usmMIBObjects.13.44.0 = STRING: "26.38"
+```
