@@ -11,4 +11,6 @@ keywords = ["networking", "rust", "driver", "snmp", "kafka"]
 [dependencies]
 clap = { version = "4.1.13", features = ["derive"] }
 kafka = "0.9"
+log = "0.4.17"
+simple_logger = "4.1.0"
 tokio = { version = "1.27.0", features = ["full"] }

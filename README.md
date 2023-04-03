@@ -1,12 +1,12 @@
 # Rust SNMP Producer - Client
 
-A Rust client app, connects to SNMP server, gets all SNMP data, parsing them,
-produces data to kafka broker.
+A Rust microservice, connects to SNMP server, gets all SNMP data, parsing them
+and produces data to kafka broker.
 
 ## RSP App Description
 
 ```sh
-./open-rsp --ip 192.168.1.10 --port 5050 --username publicMD5 --password publicMD5 --oid 1.3.6.1.6.3.15.1.13.44.0
+./open-rsp --ip 5.201.128.78 --port 5051 --username publicMD5 --password publicMD5 --oid 1.3.6.1.6.3.15.1.13.44.0
 ```
 
 ## References 

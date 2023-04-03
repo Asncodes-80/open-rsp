@@ -25,24 +25,65 @@
 /// Gather-Snmp-info            _RSP_DATA_COLLECT
 /// Parse-data                  _RSP_DATA_PARSE
 /// Produce-2Kafka              _RSP_PRODUCER
-use clap::Parser;
 use std::io;
-use tokio::net::UdpSocket;
+use std::process::{Command, Output};
 
-mod producer;
-use producer::Event;
+use clap::Parser;
 
-#[tokio::main]
-async fn main() -> io::Result<()> {
+// mod producer;
+
+fn rs_shell(args: &Args) -> Result<&Vec<u8>, io::Error> {
+    let output = Command::new("/usr/bin/snmpwalk")
+        .args(&[
+            "-v3",
+            "-l",
+            "authnoPriv",
+            "-u",
+            &args.username,
+            "-A",
+            &args.key,
+            "-a",
+            &args.encryption,
+            &format!("{}:{}", &args.ip, &args.port),
+            "1.3.6.1.6.3.15.1.13.44.0",
+        ])
+        .output()?;
+
+    Ok(&output.stdout)
+}
+
+fn main() {
     let args = Args::parse();
-    println!("Start new rsp instance...");
+    simple_logger::init().unwrap();
 
-    let _ = UdpSocket::bind(format!("{}:{}", args.ip, args.port)).await?;
+    // let mut prev_value: f32 = 0.1;
 
-    let mut producer: Event = Event::init(vec!["localhost:9092".to_string()]);
-    producer.send_data(&args.topic, String::from(format!("This is message {}", "Test")));
+    let output = String::from_utf8_lossy(&rs_shell(&args).unwrap());
+    let str_output = output.split("=").collect::<Vec<&str>>()[1];
+    println!("{}", str_output.to_owned());
 
-    Ok(())
+    // println!("{}", str_outpu)
+
+    // loop {
+    //     // log::info!("{}", str_output);
+    // }
+
+    // loop {
+    //     // ...
+    //     // Get snmp last data about an oid
+    //     // let socket = UdpSocket::bind(format!("{}:{}", args.ip, args.port)).await?;
+    //     // i.e. `next_value` parsed to a float value
+    //     let next_value: f32 = 0.0;
+
+    //     if prev_value != next_value {
+    //         prev_value = next_value;
+
+    //         let mut producer: producer::Event = producer::Event::init(vec!["localhost:9092".to_string()]);
+    //         producer.send_data(&args.topic, String::from(format!("value: {}", prev_value)));
+
+    //         log::info!("Value {} as new value, sent to to Kafka broker", prev_value);
+    //     }
+    // }
 }
 
 /// open-rsp - SNMP data gather and produce them to Kafka broker.
@@ -63,13 +104,13 @@ struct Args {
 
     /// Password: SNMP gateway password
     #[arg(short, long)]
-    passwd: String,
+    key: String,
 
     /// Protocol: Connection protocol
     #[arg(short, long, default_value_t = String::from("MD5"))]
-    connection_protocol: String,
+    encryption: String,
 
     /// Topic: Topic name to produce value to Kafka
-    #[arg(short, long)]
+    #[arg(short, long, default_value_t = String::from("my-topic"))]
     topic: String,
 }
