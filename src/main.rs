@@ -30,9 +30,12 @@ use std::process::{Command, Output};
 
 use clap::Parser;
 
-// mod producer;
+mod producer;
 
-fn rs_shell(args: &Args) -> Result<&Vec<u8>, io::Error> {
+/// Rust Shell
+///
+/// Runs `snmpwalk` with shell use in std Command.
+fn rs_shell(args: &Args) -> Result<Output, io::Error> {
     let output = Command::new("/usr/bin/snmpwalk")
         .args(&[
             "-v3",
@@ -46,27 +49,30 @@ fn rs_shell(args: &Args) -> Result<&Vec<u8>, io::Error> {
             &args.encryption,
             &format!("{}:{}", &args.ip, &args.port),
             "1.3.6.1.6.3.15.1.13.44.0",
+            "-O",
+            "q",
         ])
         .output()?;
 
-    Ok(&output.stdout)
+    Ok(output)
 }
 
 fn main() {
     let args = Args::parse();
     simple_logger::init().unwrap();
 
-    // let mut prev_value: f32 = 0.1;
+    let mut prev_value: f32 = 0.1;
 
-    let output = String::from_utf8_lossy(&rs_shell(&args).unwrap());
-    let str_output = output.split("=").collect::<Vec<&str>>()[1];
-    println!("{}", str_output.to_owned());
+    let binding = rs_shell(&args).unwrap();
+    let output = String::from_utf8_lossy(&binding.stdout).into_owned();
+    let snmp_output = output.split(" ").collect::<Vec<&str>>()[1].to_string();
+    log::info!("{}", snmp_output);
 
-    // println!("{}", str_outpu)
+    let mut producer: producer::Event = producer::Event::init(vec!["localhost:9092".to_string()]);
+    producer.send_data(&args.topic, String::from(format!("value: {}", snmp_output)));
 
-    // loop {
-    //     // log::info!("{}", str_output);
-    // }
+    // let str_output = output.split("=").collect::<Vec<&str>>()[1];
+    // println!("{}", str_output.to_owned());
 
     // loop {
     //     // ...
@@ -78,8 +84,8 @@ fn main() {
     //     if prev_value != next_value {
     //         prev_value = next_value;
 
-    //         let mut producer: producer::Event = producer::Event::init(vec!["localhost:9092".to_string()]);
-    //         producer.send_data(&args.topic, String::from(format!("value: {}", prev_value)));
+    // let mut producer: producer::Event = producer::Event::init(vec!["localhost:9092".to_string()]);
+    // producer.send_data(&args.topic, String::from(format!("value: {}", prev_value)));
 
     //         log::info!("Value {} as new value, sent to to Kafka broker", prev_value);
     //     }
