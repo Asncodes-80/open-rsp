@@ -1,6 +1,7 @@
 [package]
 name = "open-rsp"
 version = "0.1.0"
+rust-version = "1.65"
 authors = ["Asncodes-80 <asn80.asn@hotmail.com>"]
 edition = "2021"
 keywords = ["networking", "rust", "driver", "snmp", "kafka"]
