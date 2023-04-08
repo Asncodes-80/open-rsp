@@ -77,8 +77,11 @@ fn main() {
             pre_value = last_value;
 
             let mut producer: producer::Event = producer::Event::init(vec!["localhost:9092".to_string()]);
-            producer.send_data(&args.topic, String::from(format!("value: {}", pre_value)));
-            log::info!("{:?}", pre_value);
+            producer.send_data(
+                &args.topic,
+                String::from(format!("Value for {}: {}", &args.oid, pre_value)),
+            );
+            log::info!("Value for {}: {:?}", &args.oid, pre_value);
         }
     }
 }
