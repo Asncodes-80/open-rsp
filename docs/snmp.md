@@ -46,7 +46,7 @@ notifications in that they are unsolicited by the manage receiving them.
 ## snmpget cmd
 
 ```sh
-snmpwalk -v3 -l authnoPriv -u publicMD5 -a MD5 -A publicMD5 5.201.128.78:5051 1.3.6.1.6.3.15.1.13.44.0
+snmpwalk -v3 -l authnoPriv -u <username> -a MD5 -A <password> <ip:port> <oid>
 ```
 
 ```txt
