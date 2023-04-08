@@ -39,7 +39,16 @@ enum SnmpValue<'a> {
 
 impl<'a> SnmpValue<'a> {
     pub fn new(value: &'a str) -> Self {
-        let evaled = value.trim_end_matches('\n').trim_matches('"');
+        let mut output_bindings = value.split(" ");
+
+        // Passing one next index
+        output_bindings.next();
+        let Some(output) = output_bindings
+            .next() else {
+                panic!("Invalid value received from the `snmpwalk` command.");
+            };
+        // Removes additional enter space and removes \" in a string
+        let evaled = output.trim_end_matches('\n').trim_matches('"');
         let parsed = evaled.parse::<f32>();
         match parsed {
             Ok(v) => Self::Number(v),
@@ -51,24 +60,27 @@ impl<'a> SnmpValue<'a> {
 fn main() {
     let args = Args::parse();
     simple_logger::init().unwrap();
-    // let mut prev_value: f32 = 0.1;
 
-    let binding = rs_shell(&args).unwrap();
-    let output = String::from_utf8_lossy(&binding.stdout).into_owned();
-    let last_value = {
-        let mut output_bindings = output.split(" ");
-        output_bindings.next();
-        let Some(output) = output_bindings
-            .next() else {
-                panic!("Invalid value received from the `snmpwalk` command.");
-            };
-        SnmpValue::new(output)
-    };
+    let mut pre_value: f32 = 0.1;
 
-    log::info!("{:?}", last_value);
+    loop {
+        // Gets Snmp data with `snmpwalk`
+        let binding = rs_shell(&args).unwrap();
+        let output = String::from_utf8_lossy(&binding.stdout).into_owned();
 
-    // let mut producer: producer::Event = producer::Event::init(vec!["localhost:9092".to_string()]);
-    // producer.send_data(&args.topic, String::from(format!("value: {}", last_value)));
+        let last_value: f32 = match SnmpValue::new(&output) {
+            SnmpValue::Number(value) => value,
+            _ => 0.0,
+        };
+
+        if last_value != pre_value {
+            pre_value = last_value;
+
+            let mut producer: producer::Event = producer::Event::init(vec!["localhost:9092".to_string()]);
+            producer.send_data(&args.topic, String::from(format!("value: {}", pre_value)));
+            log::info!("{:?}", pre_value);
+        }
+    }
 }
 
 /// open-rsp - SNMP data gather and produce them to Kafka broker.
@@ -110,7 +122,7 @@ mod test {
 
     #[test]
     fn test_snmp_value_new() {
-        assert_eq!(SnmpValue::new("salam"), SnmpValue::Str("salam"));
+        assert_eq!(SnmpValue::new("keytie"), SnmpValue::Str("keytie"));
         assert_eq!(SnmpValue::new("24"), SnmpValue::Number(24.0));
         assert_eq!(SnmpValue::new("24.0384"), SnmpValue::Number(24.0384));
     }
